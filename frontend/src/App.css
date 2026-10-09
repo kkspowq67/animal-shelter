@@ -1,0 +1,105 @@
+/* Цветовая палитра из Pinterest */
+:root {
+  --moss: #6A6A53;
+  --mahogany: #4D342D;
+  --olive: #9B9879;
+  --egg-shell: #EDE7DB;
+  --linen: #DDCCB7;
+  --white: #FFFFFF;
+  --text-dark: #2C2C2C;
+}
+
+body {
+  margin: 0;
+  font-family: 'Georgia', serif; /* Красивый шрифт с засечками */
+  background-color: var(--egg-shell);
+  color: var(--text-dark);
+}
+
+h1, h2, h3 {
+  color: var(--mahogany);
+  font-weight: normal;
+}
+
+a {
+  color: var(--moss);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--mahogany);
+}
+
+/* Кнопки */
+.btn-primary {
+  background-color: var(--moss);
+  color: var(--white);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: var(--mahogany);
+  transform: translateY(-2px);
+}
+
+/* Карточки */
+.card {
+  background-color: var(--white);
+  border: 1px solid var(--linen);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* Секции */
+.section {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-alt {
+  background-color: var(--linen);
+}
+
+/* Шапка и подвал */
+header {
+  background-color: var(--mahogany);
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  color: var(--egg-shell);
+  margin: 0 0 10px 0;
+  font-size: 28px;
+}
+
+header nav a {
+  color: var(--linen);
+  margin: 0 15px;
+  font-size: 18px;
+}
+
+header nav a:hover {
+  color: var(--white);
+}
+
+footer {
+  background-color: var(--mahogany);
+  color: var(--linen);
+  padding: 30px 20px;
+  text-align: center;
+}
