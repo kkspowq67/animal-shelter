@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -6,18 +6,17 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { motion } from 'framer-motion';
 
+// Данные питомцев (захардкожены для деплоя)
+const pets = [
+  { id: 1, name: 'Снежок', species: 'Собака', age: 2, gender: 'Мальчик', image: '/images/pet1.jpg' },
+  { id: 2, name: 'Муся', species: 'Кошка', age: 1, gender: 'Девочка', image: '/images/pet2.jpg' },
+  { id: 3, name: 'Рыжик', species: 'Собака', age: 3, gender: 'Мальчик', image: '/images/pet3.jpg' },
+  { id: 4, name: 'Лиза', species: 'Кошка', age: 4, gender: 'Мальчик', image: '/images/pet4.jpg' },
+  { id: 5, name: 'Люся', species: 'Собака', age: 2, gender: 'Девочка', image: '/images/pet5.jpg' },
+  { id: 6, name: 'Мурка', species: 'Кошка', age: 5, gender: 'Девочка', image: '/images/pet6.jpg' }
+];
+
 const PetSlider = () => {
-  const [pets, setPets] = useState([]);
-
-  useEffect(() => {
-    fetch('http://localhost:5000/api/pets')
-      .then(res => res.json())
-      .then(data => setPets(data.slice(0, 6))) // Берем первых 6 питомцев
-      .catch(err => console.error("Ошибка загрузки:", err));
-  }, []);
-
-  if (pets.length === 0) return <div style={{ padding: '20px', textAlign: 'center' }}>Загрузка слайдера...</div>;
-
   return (
     <div className="section">
       <h2 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '32px' }}>
@@ -45,9 +44,10 @@ const PetSlider = () => {
             >
               <div style={{ height: '220px', overflow: 'hidden', borderRadius: '8px', marginBottom: '15px' }}>
                 <img 
-                  src={pet.imageUrl || 'https://via.placeholder.com/300x220?text=Фото+питомца'} 
+                  src={pet.image} 
                   alt={pet.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/300x220?text=Фото'; }}
                 />
               </div>
               <h3 style={{ margin: '0 0 10px 0', fontSize: '22px' }}>{pet.name}</h3>
@@ -63,7 +63,6 @@ const PetSlider = () => {
               <button 
                 className="btn-primary" 
                 style={{ marginTop: 'auto', width: '100%' }}
-                onClick={() => alert(`Вы хотите забрать ${pet.name}! Заполните анкету.`)}
               >
                 Забрать домой
               </button>
