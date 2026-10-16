@@ -8,12 +8,12 @@ import { motion } from 'framer-motion';
 
 // Данные питомцев (захардкожены для деплоя)
 const pets = [
-  { id: 1, name: 'Снежок', species: 'Собака', age: 2, gender: 'Мальчик', image: '/images/pet1.jpg' },
-  { id: 2, name: 'Муся', species: 'Кошка', age: 1, gender: 'Девочка', image: '/images/pet2.jpg' },
-  { id: 3, name: 'Рыжик', species: 'Собака', age: 3, gender: 'Мальчик', image: '/images/pet3.jpg' },
-  { id: 4, name: 'Лиза', species: 'Кошка', age: 4, gender: 'Мальчик', image: '/images/pet4.jpg' },
-  { id: 5, name: 'Люся', species: 'Собака', age: 2, gender: 'Девочка', image: '/images/pet5.jpg' },
-  { id: 6, name: 'Мурка', species: 'Кошка', age: 5, gender: 'Девочка', image: '/images/pet6.jpg' }
+  { id: 1, name: 'Снежок', species: 'Собака', age: 2, gender: 'Мальчик', image: 'images/pet1.jpg' },
+  { id: 2, name: 'Муся', species: 'Кошка', age: 1, gender: 'Девочка', image: 'images/pet2.jpg' },
+  { id: 3, name: 'Рыжик', species: 'Собака', age: 3, gender: 'Мальчик', image: 'images/pet3.jpg' },
+  { id: 4, name: 'Лиза', species: 'Кошка', age: 4, gender: 'Мальчик', image: 'images/pet4.jpg' },
+  { id: 5, name: 'Люся', species: 'Собака', age: 2, gender: 'Девочка', image: 'images/pet5.jpg' },
+  { id: 6, name: 'Мурка', species: 'Кошка', age: 5, gender: 'Девочка', image: 'images/pet6.jpg' }
 ];
 
 const PetSlider = () => {
