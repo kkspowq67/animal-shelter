@@ -31,7 +31,7 @@ function App() {
               и заберите его к новому хозяину.
             </p>
             <a 
-              href="/shelter-game/shelter-game.html" 
+              href={`${import.meta.env.BASE_URL}shelter-game/shelter-game.html`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"
@@ -43,7 +43,7 @@ function App() {
                 borderRadius: '40px'
               }}
             >
-               Выберите питомца
+              🎮 Выберите питомца
             </a>
           </section>
         </FadeInSection>
