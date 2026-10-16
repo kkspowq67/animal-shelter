@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Симулятор приюта</title>
+  <style>
+    :root {
+      --moss: #6A6A53;
+      --mahogany: #4D342D;
+      --olive: #9B9879;
+      --egg-shell: #EDE7DB;
+      --linen: #DDCCB7;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      background: #4D342D;
+    }
+
+    /* Фон-интерьер */
+    .room-background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('room.jpg') center/cover no-repeat;
+      z-index: 1;
+    }
+
+    .pets-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       ПИТОМЦЫ — размер 140x140
+       ============================================================ */
+    .pet-icon {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      cursor: grab;
+      pointer-events: auto;
+      transition: transform 0.2s;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+      object-fit: contain;
+    }
+
+    .pet-icon:hover {
+      transform: scale(1.15);
+    }
+
+    .pet-icon.approved {
+      filter: drop-shadow(0 0 20px #28a745) drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+    }
+
+    .owners-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       ХОЗЯИН — размер 450x450, прижат к нижнему правому углу
+       ============================================================ */
+    .owner-icon {
+      position: fixed;
+      bottom: 0px;
+      right: 0px;
+      width: 450px;
+      height: 450px;
+      pointer-events: auto;
+      animation: popIn 0.5s ease;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+      object-fit: contain;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      70% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Модальное окно анкеты */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-content {
+      background: var(--egg-shell);
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-content h2 {
+      color: var(--mahogany);
+      margin-bottom: 15px;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--olive);
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      background: var(--white);
+    }
+
+    .modal-content textarea:focus {
+      outline: 2px solid var(--moss);
+      border-color: transparent;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: var(--moss);
+      color: var(--white);
+      flex: 1;
+    }
+
+    .btn-primary:hover { background: var(--mahogany); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--moss);
+      border: 1px solid var(--moss);
+    }
+
+    .result-box {
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .result-box.approved {
+      background: #d4edda;
+      border: 2px solid #28a745;
+      color: #155724;
+    }
+
+    .result-box.rejected {
+      background: #f8d7da;
+      border: 2px solid #dc3545;
+      color: #721c24;
+    }
+
+    .dragging {
+      position: fixed;
+      pointer-events: none;
+      z-index: 2000;
+      opacity: 0.9;
+      transform: scale(1.3);
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    }
+
+    /* Счётчик */
+    .counter {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--mahogany);
+      color: var(--egg-shell);
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    /* Всплывающее окно "Спасибо" */
+    .thanks-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: var(--egg-shell);
+      border: 4px solid var(--moss);
+      border-radius: 20px;
+      padding: 30px 50px;
+      text-align: center;
+      z-index: 3000;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s;
+      opacity: 0;
+    }
+
+    .thanks-popup.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .thanks-popup .owner-name {
+      color: var(--mahogany);
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-family: 'Georgia', serif;
+    }
+
+    .thanks-popup .thanks-text {
+      color: var(--moss);
+      font-size: 26px;
+      font-family: 'Georgia', serif;
+    }
+
+    /* Победный экран */
+    .victory {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      text-align: center;
+    }
+
+    .victory.active { display: flex; }
+
+    .victory-content {
+      background: var(--egg-shell);
+      padding: 50px;
+      border-radius: 20px;
+    }
+
+    .victory h1 {
+      color: var(--mahogany);
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .victory p {
+      color: var(--moss);
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="room-background"></div>
+  <div class="pets-layer" id="petsLayer"></div>
+  <div class="owners-layer" id="ownersLayer"></div>
+
+  <div class="counter">🐾 Осталось: <span id="count">6</span></div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <div class="thanks-popup" id="thanksPopup">
+    <div class="owner-name" id="thanksName">Джимми</div>
+    <div class="thanks-text">Спасибо!</div>
+  </div>
+
+  <div class="victory" id="victory">
+    <div class="victory-content">
+      <h1>🎉 Победа!</h1>
+      <p>Все питомцы нашли свой дом!</p>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // КАРТИНКИ ПИТОМЦЕВ (PNG без фона)
+    // ============================================================
+    const pets = [
+      { id: 1, name: 'Барсик', image: 'pet1.png' },
+      { id: 2, name: 'Снежок', image: 'pet2.png' },
+      { id: 3, name: 'Рыжик', image: 'pet3.png' },
+      { id: 4, name: 'Шарик', image: 'pet4.png' },
+      { id: 5, name: 'Люся', image: 'pet5.png' },
+      { id: 6, name: 'Мурка', image: 'pet6.png' }
+    ];
+
+    // ============================================================
+    // ХОЗЯЕВА (картинка + имя)
+    // ============================================================
+    const owners = [
+      { image: 'owner1.png', name: 'Джимми' },
+      { image: 'owner2.png', name: 'ЛСП' },
+      { image: 'owner3.png', name: 'Фараон' },
+      { image: 'owner4.png', name: 'Питер Стил' },
+      { image: 'owner5.png', name: 'Брайан Мапс' },
+      { image: 'owner6.png', name: 'Джейкоб' }
+    ];
+
+    const badWords = ['алкаш', 'алкоголик', 'убью', 'выкину', 'на цепь', 'для боев', 'не буду кормить', 'избавлюсь', 'надоел', 'хуй', 'блять', 'сука', 'пиздец', 'говно'];
+    const goodWords = ['люблю', 'заботиться', 'забота', 'дом', 'семья', 'ответственный', 'гулять', 'кормить', 'ветеринар', 'играть', 'друг', 'добрый', 'ласка', 'уход', 'тепло'];
+
+    const petsLayer = document.getElementById('petsLayer');
+    const ownersLayer = document.getElementById('ownersLayer');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const countSpan = document.getElementById('count');
+    const victory = document.getElementById('victory');
+    const thanksPopup = document.getElementById('thanksPopup');
+    const thanksName = document.getElementById('thanksName');
+
+    let approvedPets = {};
+    let placedPositions = [];
+
+    function getRandomPosition(minDistance = 180) {
+      let attempts = 0;
+      const padding = 100;
+      while (attempts < 300) {
+        const x = Math.random() * (window.innerWidth - padding * 2) + padding;
+        const y = Math.random() * (window.innerHeight - padding * 2) + padding;
+        
+        const tooClose = placedPositions.some(pos => 
+          Math.hypot(pos.x - x, pos.y - y) < minDistance
+        );
+        
+        if (!tooClose) {
+          placedPositions.push({ x, y });
+          return { x, y };
+        }
+        attempts++;
+      }
+      return { 
+        x: Math.random() * (window.innerWidth - 200) + 100, 
+        y: Math.random() * (window.innerHeight - 200) + 100 
+      };
+    }
+
+    function renderPets() {
+      petsLayer.innerHTML = '';
+      placedPositions = [];
+      
+      pets.forEach(pet => {
+        const pos = getRandomPosition(180);
+        
+        const el = document.createElement('img');
+        el.className = 'pet-icon';
+        el.dataset.id = pet.id;
+        el.src = pet.image;
+        el.alt = pet.name;
+        el.style.left = pos.x + 'px';
+        el.style.top = pos.y + 'px';
+        el.onclick = () => openAdoptionForm(pet.id);
+        petsLayer.appendChild(el);
+      });
+    }
+
+    function openAdoptionForm(petId) {
+      if (approvedPets[petId]) {
+        alert('Анкета уже одобрена! Перетащите питомца к хозяину.');
+        return;
+      }
+
+      const pet = pets.find(p => p.id === petId);
+      modalContent.innerHTML = `
+        <h2>Анкета: ${pet.name}</h2>
+        <p style="margin-bottom: 10px; color: var(--moss);">Расскажите, почему вы хотите забрать питомца?</p>
+        <textarea id="answersInput" placeholder="Напишите подробно о себе, условиях содержания и мотивации..."></textarea>
+        <div class="modal-buttons">
+          <button class="btn btn-primary" onclick="submitApplication(${pet.id})">Отправить</button>
+          <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+        </div>
+        <div id="resultContainer"></div>
+      `;
+      modal.classList.add('active');
+    }
+
+    function submitApplication(petId) {
+      const answers = document.getElementById('answersInput').value.trim();
+      const resultContainer = document.getElementById('resultContainer');
+
+      if (!answers) {
+        resultContainer.innerHTML = '<div class="result-box rejected">❌ Вы не заполнили анкету!</div>';
+        return;
+      }
+
+      const lowerText = answers.toLowerCase();
+      const hasBadWord = badWords.some(word => lowerText.includes(word));
+
+      let isApproved = false;
+      let reason = '';
+
+      if (hasBadWord) {
+        reason = '❌ Анкета отклонена. Вы недостойны питомца.';
+      } else {
+        const goodCount = goodWords.filter(word => lowerText.includes(word)).length;
+        if (goodCount >= 2 || answers.length > 50) {
+          isApproved = true;
+          reason = '✅ Анкета одобрена! Перетащите питомца к хозяину.';
+        } else {
+          reason = '❌ Анкета отклонена. Напишите подробнее.';
+        }
+      }
+
+      if (isApproved) {
+        approvedPets[petId] = true;
+        resultContainer.innerHTML = `<div class="result-box approved">${reason}</div>`;
+
+        const petEl = document.querySelector(`.pet-icon[data-id="${petId}"]`);
+        petEl.classList.add('approved');
+
+        spawnOwner(petId);
+
+        setTimeout(() => {
+          closeModal();
+          petEl.onclick = null;
+          petEl.onmousedown = (e) => startDrag(e, petId);
+        }, 1500);
+      } else {
+        resultContainer.innerHTML = `<div class="result-box rejected">${reason}</div>`;
+      }
+    }
+
+    function spawnOwner(petId) {
+      const ownerIndex = (petId - 1) % owners.length;
+      const owner = owners[ownerIndex];
+
+      const el = document.createElement('img');
+      el.className = 'owner-icon';
+      el.id = 'owner-' + petId;
+      el.dataset.petId = petId;
+      el.dataset.ownerName = owner.name;
+      el.src = owner.image;
+      el.alt = owner.name;
+      
+      ownersLayer.appendChild(el);
+    }
+
+    function startDrag(e, petId) {
+      e.preventDefault();
+      const petEl = document.querySelector(`.pet-icon[data-id="${petId}"]`);
+      const rect = petEl.getBoundingClientRect();
+
+      const clone = petEl.cloneNode(true);
+      clone.classList.add('dragging');
+      clone.style.left = rect.left + 'px';
+      clone.style.top = rect.top + 'px';
+      clone.style.width = rect.width + 'px';
+      clone.style.height = rect.height + 'px';
+      document.body.appendChild(clone);
+
+      petEl.style.opacity = '0.3';
+
+      const offsetX = e.clientX - rect.left;
+      const offsetY = e.clientY - rect.top;
+
+      function onMove(moveEvent) {
+        clone.style.left = (moveEvent.clientX - offsetX) + 'px';
+        clone.style.top = (moveEvent.clientY - offsetY) + 'px';
+
+        const ownerEl = document.getElementById('owner-' + petId);
+        if (ownerEl) {
+          const ownerRect = ownerEl.getBoundingClientRect();
+          const distance = Math.hypot(
+            moveEvent.clientX - (ownerRect.left + ownerRect.width / 2),
+            moveEvent.clientY - (ownerRect.top + ownerRect.height / 2)
+          );
+          ownerEl.style.transform = distance < 350 ? 'scale(1.2)' : 'scale(1)';
+        }
+      }
+
+      function onUp(upEvent) {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+
+        const ownerEl = document.getElementById('owner-' + petId);
+        if (!ownerEl) {
+          clone.remove();
+          petEl.style.opacity = '1';
+          return;
+        }
+
+        const ownerRect = ownerEl.getBoundingClientRect();
+        const distance = Math.hypot(
+          upEvent.clientX - (ownerRect.left + ownerRect.width / 2),
+          upEvent.clientY - (ownerRect.top + ownerRect.height / 2)
+        );
+
+        if (distance < 350) {
+          const ownerName = ownerEl.dataset.ownerName;
+          showThanks(ownerName);
+
+          clone.remove();
+          petEl.remove();
+          ownerEl.remove();
+          delete approvedPets[petId];
+          updateCounter();
+        } else {
+          clone.remove();
+          petEl.style.opacity = '1';
+          ownerEl.style.transform = 'scale(1)';
+        }
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    function showThanks(ownerName) {
+      thanksName.textContent = ownerName;
+      thanksPopup.classList.add('active');
+
+      setTimeout(() => {
+        thanksPopup.classList.remove('active');
+      }, 2000);
+    }
+
+    function updateCounter() {
+      const remaining = document.querySelectorAll('.pet-icon').length;
+      countSpan.textContent = remaining;
+
+      if (remaining === 0) {
+        setTimeout(() => {
+          victory.classList.add('active');
+        }, 2500);
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    renderPets();
+    updateCounter();
+  </script>
+</body>
+</html>

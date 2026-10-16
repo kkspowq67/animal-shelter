@@ -22,6 +22,32 @@ function App() {
         {/* Слайдер с питомцами */}
         <PetSlider />
 
+        {/* Кнопка на симулятор */}
+        <FadeInSection>
+          <section className="section" style={{ textAlign: 'center' }}>
+            <h2>Хотите забрать питомца домой?</h2>
+            <p style={{ marginBottom: '25px', fontSize: '18px', maxWidth: '700px', margin: '0 auto 25px' }}>
+              Попробуйте наш игровой симулятор приюта! Выберите питомца, заполните анкету 
+              и заберите его к новому хозяину.
+            </p>
+            <a 
+              href="/shelter-game/shelter-game.html" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{ 
+                display: 'inline-block', 
+                textDecoration: 'none',
+                padding: '18px 40px',
+                fontSize: '20px',
+                borderRadius: '40px'
+              }}
+            >
+               Выберите питомца
+            </a>
+          </section>
+        </FadeInSection>
+
         {/* Блок "Почему стоит взять питомца" */}
         <FadeInSection>
           <section className="section section-alt">
