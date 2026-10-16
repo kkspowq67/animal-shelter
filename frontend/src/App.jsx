@@ -43,7 +43,7 @@ function App() {
                 borderRadius: '40px'
               }}
             >
-              🎮 Выберите питомца
+               Выберите питомца
             </a>
           </section>
         </FadeInSection>
